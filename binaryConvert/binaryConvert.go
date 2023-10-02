@@ -2,6 +2,32 @@ package binaryConvert
 
 import "strconv"
 
+// InstructionType
+/*
+Maps instruction to its type
+parameter: instruction string (ie AND)
+returns: instruction type string (ie R)
+*/
+var InstructionType = map[string]string{
+	"B":    "B",
+	"AND":  "R",
+	"ADD":  "R",
+	"ADDI": "I",
+	"ORR":  "R",
+	"CBZ":  "CB",
+	"CBNZ": "CB",
+	"SUB,": "R",
+	"SUBI": "I",
+	"MOVZ": "IM",
+	"MOVK": "IM",
+	"LSR":  "R",
+	"LSL":  "R",
+	"STUR": "D",
+	"LDUR": "D",
+	"ASR":  "R",
+	"EOR":  "R",
+}
+
 // IntToInstruction
 /*
 converts an integer value (from a binary instruction) into a string OPCODE
