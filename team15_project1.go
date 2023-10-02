@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"project1/binaryConvert"
 )
 
@@ -15,7 +17,49 @@ func main() {
 		"11111111111111111111111111111111", // -1 w/ 2s complement
 		"11111111111111111111111111111110", // -2 w/ 2s complement
 		"11111111111111111111111111111101", // -3 w/ 2s complement
-		//"abcdefghijklmnopqrstuvwxyz",     // invalid, throws panic
+		//"abcdefghijklmnopqrstuvwxyz",     // invalid, triggers panic
+	}
+
+	InputFileName := "test1_bin.txt"
+	//OutputFileName := "team15_out"
+
+	inputFile, err := os.Open(InputFileName)
+	if err != nil {
+		panic(err)
+	}
+
+	scanner := bufio.NewScanner(inputFile)
+
+	fmt.Println("Testing reading entire file and output conversions to console")
+	readData := false
+	for scanner.Scan() {
+		line := scanner.Text()
+		opcode := binaryConvert.BinaryStringToInt(line[:11])
+		opcodeString := binaryConvert.IntToInstruction(opcode)
+		insType := binaryConvert.InstructionType[opcodeString]
+		fmt.Println("Instruction Type: " + insType)
+
+		//rm := line[11:16]
+		//shamt := line[16:22]
+		//rn := line[22:27]
+		//rd := line[27:32]
+		//fmt.Printf("rm: %s\nshamt: %s\nrn: %s\nrd: %s\n", rm, shamt, rn, rd)
+
+		if opcodeString == "BREAK" {
+			readData = true
+		}
+
+		if !readData {
+			fmt.Println(opcodeString)
+		} else {
+			fmt.Println(opcode)
+		}
+
+	}
+
+	err = inputFile.Close()
+	if err != nil {
+		panic(err)
 	}
 
 	fmt.Println("Testing binaryStringToInt")
