@@ -3,12 +3,10 @@ package binaryConvert
 import "strconv"
 
 // InstructionType
-/*
-Maps instruction to its type
-parameter: instruction string (ie AND)
-returns: instruction type string (ie R)
-*/
-var InstructionType = map[string]string{
+// Maps instruction to its type
+// parameter: instruction string (ie AND)
+// returns: instruction type string (ie R)
+var instructionType = map[string]string{
 	"B":    "B",
 	"AND":  "R",
 	"ADD":  "R",
@@ -16,7 +14,7 @@ var InstructionType = map[string]string{
 	"ORR":  "R",
 	"CBZ":  "CB",
 	"CBNZ": "CB",
-	"SUB,": "R",
+	"SUB":  "R",
 	"SUBI": "I",
 	"MOVZ": "IM",
 	"MOVK": "IM",
@@ -28,12 +26,17 @@ var InstructionType = map[string]string{
 	"EOR":  "R",
 }
 
+// GetInstructionType
+// Accessor for instructionType map
+// Returns a string of the instruction type
+func GetInstructionType(key string) string {
+	return instructionType[key]
+}
+
 // IntToInstruction
-/*
-converts an integer value (from a binary instruction) into a string OPCODE
-parameter: int32
-return: string
-*/
+// converts an integer value (from a binary instruction) into a string OPCODE
+// parameter: int32
+// return: string
 func IntToInstruction(value int32) string {
 	if value >= 160 && value <= 191 {
 		return "B"
@@ -95,11 +98,9 @@ func IntToInstruction(value int32) string {
 }
 
 // BinaryStringToInt
-/*
-converts a string of 11 characters (binary number) to a base 10 integer
-parameter: string
-return: int
-*/
+// converts a string of 11 characters (binary number) to a base 10 integer
+// parameter: string
+// return: int
 func BinaryStringToInt(binary string) int32 {
 	if i64, err := strconv.ParseInt(binary, 2, 32); err != nil {
 		return (BinaryStringToInt(twosComplement(binary)) + 1) * -1
@@ -109,14 +110,12 @@ func BinaryStringToInt(binary string) int32 {
 }
 
 // twosComplement
-/*
-helper function for binaryStringToInt
-this is called if the ParseInt on the binary string overflows in binaryStringToInt
-inverts the bits then returns the inverted string
-can also throw panic if the string contains non-binary characters for some reason
-parameter: string
-return: string with inverted bits
-*/
+// helper function for binaryStringToInt
+// this is called if the ParseInt on the binary string overflows in binaryStringToInt
+// inverts the bits then returns the inverted string
+// can also throw panic if the string contains non-binary characters for some reason
+// parameter: string
+// return: string with inverted bits
 func twosComplement(binary string) string {
 	var complement = ""
 
