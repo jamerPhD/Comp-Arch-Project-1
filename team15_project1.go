@@ -8,18 +8,6 @@ import (
 )
 
 func main() {
-
-	var testStrings = []string{
-		"10001010000",                      // "AND" == 1104
-		"10101010000",                      // "ORR" == 1360
-		"11010100101",                      // Just a random number 1701
-		"110101",                           // Random smaller number (53)
-		"11111111111111111111111111111111", // -1 w/ 2s complement
-		"11111111111111111111111111111110", // -2 w/ 2s complement
-		"11111111111111111111111111111101", // -3 w/ 2s complement
-		//"abcdefghijklmnopqrstuvwxyz",     // invalid, triggers panic
-	}
-
 	InputFileName := "test1_bin.txt"
 	//OutputFileName := "team15_out"
 
@@ -31,47 +19,38 @@ func main() {
 	scanner := bufio.NewScanner(inputFile)
 
 	fmt.Println("Testing reading entire file and output conversions to console")
-	readData := false
+
+	//// When readData == true the loop will start reading data rather than instructions
+	//readData := false
 	for scanner.Scan() {
 		line := scanner.Text()
 		opcode := binaryConvert.BinaryStringToInt(line[:11])
 		opcodeString := binaryConvert.IntToInstruction(opcode)
-		insType := binaryConvert.InstructionType[opcodeString]
-		fmt.Println("Instruction Type: " + insType)
-
+		insType := binaryConvert.GetInstructionType(opcodeString)
 		//rm := line[11:16]
 		//shamt := line[16:22]
 		//rn := line[22:27]
 		//rd := line[27:32]
 		//fmt.Printf("rm: %s\nshamt: %s\nrn: %s\nrd: %s\n", rm, shamt, rn, rd)
 
+		// Once we see BREAK we'll exit this loop and read the rest of the file as data only
 		if opcodeString == "BREAK" {
-			readData = true
+			break
 		}
+		fmt.Println("Instruction Type: " + insType)
+		fmt.Println("OPCODE: " + opcodeString)
+	}
 
-		if !readData {
-			fmt.Println(opcodeString)
-		} else {
-			fmt.Println(opcode)
-		}
-
+	// Read data
+	for scanner.Scan() {
+		line := scanner.Text()
+		data := binaryConvert.BinaryStringToInt(line)
+		fmt.Println(data)
 	}
 
 	err = inputFile.Close()
 	if err != nil {
 		panic(err)
-	}
-
-	fmt.Println("Testing binaryStringToInt")
-	for i := 0; i < len(testStrings); i++ {
-		fmt.Println(binaryConvert.BinaryStringToInt(testStrings[i]))
-	}
-
-	fmt.Println("Testing binary string to instruction conversion")
-	for i := 0; i < len(testStrings); i++ {
-		x := binaryConvert.BinaryStringToInt(testStrings[i])
-
-		fmt.Println(binaryConvert.IntToInstruction(x))
 	}
 
 }
