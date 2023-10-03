@@ -18,14 +18,16 @@ func main() {
 
 	scanner := bufio.NewScanner(inputFile)
 
+
 	programCounter := 96
+  
 	//Start reading instructions
 	for scanner.Scan() {
 		line := scanner.Text()
 		opcode := binaryConvert.BinaryStringToInt(line[:11])
 		opcodeString := binaryConvert.IntToInstruction(opcode)
 		insType := binaryConvert.GetInstructionType(opcodeString)
-
+    
 		//TODO
 		//Put file write statements into this switch
 		//James H: I added some print statements just to demo how to use my package
