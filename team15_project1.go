@@ -10,16 +10,13 @@ import (
 
 func main() {
 	InputFileName := flag.String("i", "", "Gets the input file name")
-	//OutputFileName := flag.String("o", "", "Gets the output file name")
+	OutputFileName := flag.String("o", "", "Gets the output file name")
 
 	flag.Parse()
 
 	if flag.NArg() != 0 {
 		os.Exit(200)
 	}
-
-	fmt.Println(InputFileName)
-	fmt.Println(*InputFileName)
 	//InputFileName := "test1_bin.txt"
 	//OutputFileName := "team15_out"
 
@@ -36,16 +33,18 @@ func main() {
 		line := scanner.Text()
 		opcode := binaryConvert.BinaryStringToInt(line[:11])
 		opcodeString := binaryConvert.IntToInstruction(opcode)
+
+		// Once we see BREAK we'll exit this loop and read the rest of the file as data only
+		if opcodeString == "BREAK" {
+			break
+		}
+
 		insType := binaryConvert.GetInstructionType(opcodeString)
 
-		//TODO
-		//Put file write statements into this switch
-		//James H: I added some print statements just to demo how to use my package
 		switch insType {
 		case "R":
 			//rm, rn, rd etc are labels given in the lecture 7 slides
 			rm := line[11:16]
-			//shamt := line[16:22]
 			rn := line[22:27]
 			rd := line[27:32]
 			fmt.Printf("%s  R%d, R%d, R%d\n", opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
@@ -54,9 +53,6 @@ func main() {
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
 			rd := binaryConvert.BinaryStringToInt(line[27:32])
 			fmt.Printf("%s  R%d, R%d, R%d\n", opcodeString, rd, rn, immediate)
-			//immediate := line[10:22]
-			//rn := line[22:27]
-			//rd := line[27:32]
 		case "IM":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			shiftCode := binaryConvert.BinaryStringToInt(line[22:24])
@@ -64,28 +60,16 @@ func main() {
 			fmt.Printf("%s R%d, #%d, LSL #%d\n", opcodeString, rd, immediate, shiftCode)
 		case "CB":
 			offset := binaryConvert.BinaryStringToInt(line[8:27])
-			fmt.Printf("%s R%d, #%d\n", opcodeString, offset)
+			conditional := binaryConvert.BinaryStringToInt(line[27:32])
+			fmt.Printf("%s R%d, #%d\n", opcodeString, offset, conditional)
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
 			fmt.Printf("B #%d\n", offset)
 		}
 
 		programCounter += 4
-
-		// Once we see BREAK we'll exit this loop and read the rest of the file as data only
-		if opcodeString == "BREAK" {
-			break
-		}
-
-		fmt.Println("Instruction Type: " + insType)
-		fmt.Println("OPCODE: " + opcodeString)
 	}
 
-	// Read data
-	//TODO
-	//Write data to file
-
-	OutputFileName := flag.String("o", "", "Gets the output file name")
 	OutputFile, err := os.Create(*OutputFileName)
 	if err != nil {
 		panic(err)

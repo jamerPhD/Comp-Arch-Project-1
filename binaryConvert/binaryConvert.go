@@ -117,7 +117,7 @@ func BinaryStringToInt(binary string) int32 {
 // parameter: string
 // return: string with inverted bits
 func twosComplement(binary string) string {
-	var complement = "7"
+	var complement = ""
 
 	for i := 0; i < len(binary); i++ {
 		if binary[i] == '0' {
@@ -125,7 +125,7 @@ func twosComplement(binary string) string {
 		} else if binary[i] == '1' {
 			complement += "0"
 		} else {
-			panic("Binary string contains invalid character")
+			panic("Binary string contains invalid character: " + binary)
 		}
 	}
 
