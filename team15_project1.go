@@ -84,6 +84,14 @@ func main() {
 	// Read data
 	//TODO
 	//Write data to file
+
+	OutputFileName := flag.String("o", "", "Gets the output file name")
+	OutputFile, err := os.Create(*OutputFileName)
+	if err != nil {
+		panic(err)
+	}
+	err = OutputFile.Close()
+
 	for scanner.Scan() {
 		line := scanner.Text()
 		data := binaryConvert.BinaryStringToInt(line)
