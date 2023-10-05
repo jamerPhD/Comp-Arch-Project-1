@@ -65,6 +65,12 @@ func main() {
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
 			fmt.Printf("B #%d\n", offset)
+		case "D":
+			address := binaryConvert.BinaryStringToInt(line[11:20])
+			//op2 := binaryConvert.BinaryStringToInt(line[20:22])
+			rn := binaryConvert.BinaryStringToInt(line[22:27])
+			rt := binaryConvert.BinaryStringToInt(line[27:32])
+			fmt.Printf("%s R%d, [R%d, #%d]\n", opcodeString, rt, rn, address)
 		}
 
 		programCounter += 4
