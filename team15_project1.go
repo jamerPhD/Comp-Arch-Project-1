@@ -50,11 +50,21 @@ func main() {
 			rd := line[27:32]
 			fmt.Printf("%s  R%d, R%d, R%d\n", opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
 		case "I":
+			immediate := binaryConvert.BinaryStringToInt(line[10:22])
+			rn := binaryConvert.BinaryStringToInt(line[22:27])
+			rd := binaryConvert.BinaryStringToInt(line[27:32])
+			fmt.Printf("%s  R%d, R%d, R%d\n", opcodeString, rd, rn, immediate)
 			//immediate := line[10:22]
 			//rn := line[22:27]
 			//rd := line[27:32]
 		case "IM":
+			immediate := binaryConvert.BinaryStringToInt(line[10:22])
+			shiftCode := binaryConvert.BinaryStringToInt(line[22:24])
+			rd := binaryConvert.BinaryStringToInt(line[27:32])
+			fmt.Printf("%s R%d, #%d, LSL #%d\n", opcodeString, rd, immediate, shiftCode)
 		case "CB":
+			offset := binaryConvert.BinaryStringToInt(line[8:27])
+			fmt.Printf("%s R%d, #%d\n", opcodeString, offset)
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
 			fmt.Printf("B #%d\n", offset)
