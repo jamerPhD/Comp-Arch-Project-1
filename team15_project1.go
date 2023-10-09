@@ -52,12 +52,35 @@ func main() {
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
 			rd := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Printf("%s  R%d, R%d, R%d\n", opcodeString, rd, rn, immediate)
+			fmt.Printf("%s  R%d, R%d, #%d\n", opcodeString, rd, rn, immediate)
 		case "IM":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			shiftCode := binaryConvert.BinaryStringToInt(line[22:24])
 			rd := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Printf("%s R%d, #%d, LSL #%d\n", opcodeString, rd, immediate, shiftCode)
+			fmt.Printf("%s R%d, #%d", opcodeString, rd, immediate)
+
+			switch shiftCode {
+
+			case 0:
+				fmt.Printf("\n")
+
+			case 1:
+				fmt.Printf(", LSL")
+
+			case 2:
+				fmt.Printf(", LSR")
+
+			case 3:
+				fmt.Printf(", ASR")
+
+			default:
+				fmt.Printf("(Unknown) \n")
+			}
+			if shiftCode != 0 {
+				fmt.Printf(" #%d\n", shiftCode)
+			} else {
+				fmt.Printf("\n")
+			}
 		case "CB":
 			offset := binaryConvert.BinaryStringToInt(line[8:27])
 			conditional := binaryConvert.BinaryStringToInt(line[27:32])
