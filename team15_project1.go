@@ -56,12 +56,12 @@ func main() {
 			rm := line[11:16]
 			rn := line[22:27]
 			rd := line[27:32]
-			fmt.Fprintf(outputFile, "%s    %s     R%d,    R%d,    R%d    %d\n", line, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm), programCounter)
+			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,    R%d,    R%d\n", line, programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
 		case "I":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
 			rd := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Fprintf(outputFile, "%s    %s    R%d,    R%d,    #%d    %d\n", line, opcodeString, rd, rn, immediate, programCounter)
+			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,    R%d,    #%d\n", line, programCounter, opcodeString, rd, rn, immediate)
 		case "IM":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			shiftCode := binaryConvert.BinaryStringToInt(line[22:24])
@@ -79,22 +79,22 @@ func main() {
 				shiftType = ", ASR"
 			}
 
-			fmt.Fprintf(outputFile, "%s    %s    R%d,  #%d%s    %d\n", line, opcodeString, rd, immediate, shiftType, programCounter)
+			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,    #%d%s\n", line, programCounter, opcodeString, rd, immediate, shiftType)
 		case "CB":
 			offset := binaryConvert.BinaryStringToInt(line[8:27])
 			conditional := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Fprintf(outputFile, "%s    %s    R%d,           #%d    %d\n", line, opcodeString, offset, conditional, programCounter)
+			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,    #%d\n", line, programCounter, opcodeString, offset, conditional)
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
-			fmt.Fprintf(outputFile, "%s    %s       #%d    %d\n", line, opcodeString, offset, programCounter)
+			fmt.Fprintf(outputFile, "%s    %d    %s    #%d\n", line, programCounter, opcodeString, offset)
 		case "D":
 			address := binaryConvert.BinaryStringToInt(line[11:20])
 			//op2 := binaryConvert.BinaryStringToInt(line[20:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
 			rt := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Fprintf(outputFile, "%s    %s    R%d,    [R%d, #%d]    %d\n", line, opcodeString, rt, rn, address, programCounter)
+			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,    [R%d, #%d]\n", line, programCounter, opcodeString, rt, rn, address)
 		case "NOP":
-			fmt.Fprintf(outputFile, "%s    %s    %d\n", line, opcodeString, programCounter)
+			fmt.Fprintf(outputFile, "%s    %d    %s\n", line, programCounter, opcodeString)
 		default: // Instruction cannot be identified
 			fmt.Fprintf(outputFile, "%s   Unknown Value   %d\n", line, programCounter)
 		}
@@ -106,7 +106,7 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		data := binaryConvert.BinaryStringToInt(line)
-		fmt.Fprintln(outputFile, data)
+		fmt.Fprintf(outputFile, "%s    %d    %d\n", line, programCounter, data)
 		programCounter += 4
 	}
 }
