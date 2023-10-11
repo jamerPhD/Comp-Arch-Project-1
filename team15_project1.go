@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"project1/binaryConvert"
+	"team15_project1/binaryConvert"
 )
 
 func main() {
