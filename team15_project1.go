@@ -24,6 +24,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer inputFile.Close()
+
+	outputFile, err := os.Create(*OutputFileName)
+	if err != nil {
+		panic(err)
+	}
+	defer outputFile.Close()
 
 	scanner := bufio.NewScanner(inputFile)
 
@@ -47,73 +54,62 @@ func main() {
 			rm := line[11:16]
 			rn := line[22:27]
 			rd := line[27:32]
-			fmt.Printf("%s  R%d, R%d, R%d\n", opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
+			fmt.Fprintf(outputFile, "%s  R%d, R%d, R%d\n", opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
 		case "I":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
 			rd := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Printf("%s  R%d, R%d, #%d\n", opcodeString, rd, rn, immediate)
+			fmt.Fprintf(outputFile, "%s  R%d, R%d, #%d\n", opcodeString, rd, rn, immediate)
 		case "IM":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			shiftCode := binaryConvert.BinaryStringToInt(line[22:24])
 			rd := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Printf("%s R%d, #%d", opcodeString, rd, immediate)
+			fmt.Fprintf(outputFile, "%s R%d, #%d", opcodeString, rd, immediate)
 
 			switch shiftCode {
 
 			case 0:
-				fmt.Printf("\n")
+				fmt.Fprintf(outputFile, "\n")
 
 			case 1:
-				fmt.Printf(", LSL")
+				fmt.Fprintf(outputFile, ", LSL")
 
 			case 2:
-				fmt.Printf(", LSR")
+				fmt.Fprintf(outputFile, ", LSR")
 
 			case 3:
-				fmt.Printf(", ASR")
+				fmt.Fprintf(outputFile, ", ASR")
 
 			default:
-				fmt.Printf("(Unknown) \n")
+				fmt.Fprintf(outputFile, "(Unknown) \n")
 			}
 			if shiftCode != 0 {
-				fmt.Printf(" #%d\n", shiftCode)
+				fmt.Fprintf(outputFile, " #%d\n", shiftCode)
 			} else {
-				fmt.Printf("\n")
+				fmt.Fprintf(outputFile, "\n")
 			}
 		case "CB":
 			offset := binaryConvert.BinaryStringToInt(line[8:27])
 			conditional := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Printf("%s R%d, #%d\n", opcodeString, offset, conditional)
+			fmt.Fprintf(outputFile, "%s R%d, #%d\n", opcodeString, offset, conditional)
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
-			fmt.Printf("B #%d\n", offset)
+			fmt.Fprintf(outputFile, "B #%d\n", offset)
 		case "D":
 			address := binaryConvert.BinaryStringToInt(line[11:20])
 			//op2 := binaryConvert.BinaryStringToInt(line[20:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
 			rt := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Printf("%s R%d, [R%d, #%d]\n", opcodeString, rt, rn, address)
+			fmt.Fprintf(outputFile, "%s R%d, [R%d, #%d]\n", opcodeString, rt, rn, address)
 		}
 
 		programCounter += 4
 	}
 
-	OutputFile, err := os.Create(*OutputFileName)
-	if err != nil {
-		panic(err)
-	}
-	err = OutputFile.Close()
-
 	for scanner.Scan() {
 		line := scanner.Text()
 		data := binaryConvert.BinaryStringToInt(line)
-		fmt.Println(data)
-	}
+		fmt.Fprintln(outputFile, data)
 
-	err = inputFile.Close()
-	if err != nil {
-		panic(err)
 	}
-
 }
