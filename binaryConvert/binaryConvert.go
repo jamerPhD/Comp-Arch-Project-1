@@ -24,13 +24,19 @@ var instructionType = map[string]string{
 	"LDUR": "D",
 	"ASR":  "R",
 	"EOR":  "R",
+	"NOP":  "NOP",
 }
 
 // GetInstructionType
 // Accessor for instructionType map
 // Returns a string of the instruction type
 func GetInstructionType(key string) string {
-	return instructionType[key]
+	if key == "Unknown Value" {
+		return key
+	} else {
+		return instructionType[key]
+	}
+
 }
 
 // IntToInstruction
@@ -38,6 +44,9 @@ func GetInstructionType(key string) string {
 // parameter: int32
 // return: string
 func IntToInstruction(value int32) string {
+	if value == 0 {
+		return "NOP"
+	}
 	if value >= 160 && value <= 191 {
 		return "B"
 	}
@@ -93,7 +102,7 @@ func IntToInstruction(value int32) string {
 		return "BREAK"
 	}
 
-	return "???" // Instruction not found
+	return "Unknown Instruction" // Instruction not found
 
 }
 

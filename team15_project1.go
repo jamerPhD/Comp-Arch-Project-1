@@ -43,6 +43,7 @@ func main() {
 
 		// Once we see BREAK we'll exit this loop and read the rest of the file as data only
 		if opcodeString == "BREAK" {
+			fmt.Fprintf(outputFile, "%s %s %s %s %s %s %s    %d    %s\n", line[:1], line[1:6], line[6:11], line[11:16], line[16:21], line[21:26], line[26:], programCounter, opcodeString)
 			break
 		}
 
@@ -81,7 +82,7 @@ func main() {
 				fmt.Fprintf(outputFile, ", ASR")
 
 			default:
-				fmt.Fprintf(outputFile, "(Unknown) \n")
+				fmt.Fprintf(outputFile, "Unknown Value \n")
 			}
 			if shiftCode != 0 {
 				fmt.Fprintf(outputFile, " #%d\n", shiftCode)
@@ -101,6 +102,10 @@ func main() {
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
 			rt := binaryConvert.BinaryStringToInt(line[27:32])
 			fmt.Fprintf(outputFile, "%s R%d, [R%d, #%d]\n", opcodeString, rt, rn, address)
+		case "NOP":
+			fmt.Fprintf(outputFile, "%s %s %s %s %s %s    %d    %s\n", line[:8], line[8:11], line[11:16], line[16:21], line[21:26], line[26:], programCounter, insType)
+		default: // Instruction cannot be identified
+			fmt.Fprintf(outputFile, "%s    %d    Unknown Value\n", line, programCounter)
 		}
 
 		programCounter += 4
@@ -110,6 +115,6 @@ func main() {
 		line := scanner.Text()
 		data := binaryConvert.BinaryStringToInt(line)
 		fmt.Fprintln(outputFile, data)
-
+		programCounter += 4
 	}
 }
