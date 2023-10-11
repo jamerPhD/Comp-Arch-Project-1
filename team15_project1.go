@@ -36,6 +36,7 @@ func main() {
 
 	programCounter := 96
 	instructionCounter := 0
+
 	//Start reading instructions
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -56,12 +57,12 @@ func main() {
 			rm := line[11:16]
 			rn := line[22:27]
 			rd := line[27:32]
-			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,    R%d,    R%d\n", line, programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
+			fmt.Fprintf(outputFile, "%s    %d    %s     R%d,     R%d,    R%d\n", line, programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
 		case "I":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
 			rd := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,    R%d,    #%d\n", line, programCounter, opcodeString, rd, rn, immediate)
+			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,     R%d,     #%d\n", line, programCounter, opcodeString, rd, rn, immediate)
 		case "IM":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			shiftCode := binaryConvert.BinaryStringToInt(line[22:24])
@@ -74,16 +75,16 @@ func main() {
 			case 1:
 				shiftType = ", LSL    "
 			case 2:
-				shiftType = ", LSR"
+				shiftType = ",       LSR"
 			case 3:
 				shiftType = ", ASR"
 			}
 
-			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,    #%d%s\n", line, programCounter, opcodeString, rd, immediate, shiftType)
+			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,     #%d%s\n", line, programCounter, opcodeString, rd, immediate, shiftType)
 		case "CB":
 			offset := binaryConvert.BinaryStringToInt(line[8:27])
 			conditional := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,    #%d\n", line, programCounter, opcodeString, offset, conditional)
+			fmt.Fprintf(outputFile, "%s    %d    %s    R%d,     #%d\n", line, programCounter, opcodeString, offset, conditional)
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
 			fmt.Fprintf(outputFile, "%s    %d    %s    #%d\n", line, programCounter, opcodeString, offset)
