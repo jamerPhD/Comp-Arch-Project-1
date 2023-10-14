@@ -11,7 +11,6 @@ import (
 func main() {
 	InputFileName := flag.String("i", "", "Gets the input file name")
 	OutputFileName := flag.String("o", "", "Gets the output file name")
-
 	flag.Parse()
 
 	if flag.NArg() != 0 {
@@ -26,7 +25,7 @@ func main() {
 	}
 	defer inputFile.Close()
 
-	outputFile, err := os.Create(*OutputFileName)
+	outputFile, err := os.Create(*OutputFileName + "_dis.txt")
 	if err != nil {
 		panic(err)
 	}
