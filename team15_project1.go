@@ -82,8 +82,8 @@ func main() {
 
 			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, #%d%s\n", line[:8]+" "+line[8:22]+" "+line[27:32], programCounter, opcodeString, rd, immediate, shiftType)
 		case "CB":
-			offset := binaryConvert.BinaryStringToInt(line[8:27])
 			conditional := binaryConvert.BinaryStringToInt(line[27:32])
+			offset := binaryConvert.BinaryStringToInt(line[8:27])
 			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, #%d\n", line[:8]+" "+line[8:27]+" "+line[27:32], programCounter, opcodeString, offset, conditional)
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
