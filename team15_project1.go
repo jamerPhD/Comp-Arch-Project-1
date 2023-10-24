@@ -58,7 +58,12 @@ func main() {
 			rn := line[22:27]
 			rd := line[27:32]
 			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, R%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
-
+		case "RL":
+			//rm, rn, rd etc are labels given in the lecture 7 slides
+			immediate := binaryConvert.BinaryStringToInt(line[16:22])
+			rn := line[22:27]
+			rd := line[27:32]
+			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, #%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), immediate)
 		case "I":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
@@ -81,10 +86,10 @@ func main() {
 				shiftType = ", ASR"
 			}
 
-			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, #%d%s\n", line[:8]+" "+line[8:22]+" "+line[27:32], programCounter, opcodeString, rd, immediate, shiftType)
+			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, #%d%s\n", line[:10]+" "+line[10:22]+" "+line[22:24]+" "+line[24:27]+" "+line[27:32], programCounter, opcodeString, rd, immediate, shiftType)
 		case "CB":
-			conditional := binaryConvert.BinaryStringToInt(line[27:32])
 			offset := binaryConvert.BinaryStringToInt(line[8:27])
+			conditional := binaryConvert.BinaryStringToInt(line[27:32])
 			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, #%d\n", line[:8]+" "+line[8:27]+" "+line[27:32], programCounter, opcodeString, offset, conditional)
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
