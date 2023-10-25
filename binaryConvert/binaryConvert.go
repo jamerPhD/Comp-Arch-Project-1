@@ -111,7 +111,11 @@ func IntToInstruction(value int32) string {
 // parameter: string
 // return: int
 func BinaryStringToInt(binary string) int32 {
-	if i64, err := strconv.ParseInt(binary, 2, 26); err != nil {
+	bitSize := 26
+	if len(binary) > 26 {
+		bitSize = 32
+	}
+	if i64, err := strconv.ParseInt(binary, 2, bitSize); err != nil {
 		return (BinaryStringToInt(twosComplement(binary)) + 1) * -1
 	} else {
 		return int32(i64)
