@@ -18,11 +18,11 @@ var instructionType = map[string]string{
 	"SUBI": "I",
 	"MOVZ": "IM",
 	"MOVK": "IM",
-	"LSR":  "R",
-	"LSL":  "R",
+	"LSR":  "RL",
+	"LSL":  "RL",
 	"STUR": "D",
 	"LDUR": "D",
-	"ASR":  "R",
+	"ASR":  "RL",
 	"EOR":  "R",
 	"NOP":  "NOP",
 }
@@ -104,17 +104,6 @@ func IntToInstruction(value int32) string {
 
 	return "Unknown Instruction" // Instruction not found
 
-}
-
-func BranchStringToInt(binary string) int32 {
-	var complement string
-	if binary[0] == '1' {
-		complement = twosComplement(binary)
-		return (BinaryStringToInt(complement) + 1) * -1
-	} else {
-		complement = binary
-		return BinaryStringToInt(complement) + 1
-	}
 }
 
 // BinaryStringToInt
