@@ -63,7 +63,7 @@ func main() {
 			immediate := binaryConvert.BinaryStringToInt(line[16:22])
 			rn := line[22:27]
 			rd := line[27:32]
-			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, #%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), immediate)
+			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, #%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rd), immediate)
 		case "I":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
