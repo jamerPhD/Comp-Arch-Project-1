@@ -8,7 +8,26 @@ import (
 	"team15_project1/binaryConvert"
 )
 
+var registers [32]uint32
+var memory [1024]uint32
+
+type Instruction struct {
+	instructionName string
+	rm              int32
+	rn              int32
+	rd              int32
+	immediate       int32
+	shiftCode       int32
+	shiftType       int32
+	conditional     int32
+	offset          int32
+	address         int32
+	op2             int32
+}
+
 func main() {
+	instructionQueue := []Instruction{}
+
 	InputFileName := flag.String("i", "", "Gets the input file name")
 	OutputFileName := flag.String("o", "", "Gets the output file name")
 	flag.Parse()
@@ -100,6 +119,13 @@ func main() {
 			fmt.Fprintf(outputFile, "%s\t%d\t%s\n", line, programCounter, opcodeString)
 		default: // Instruction cannot be identified
 			fmt.Fprintf(outputFile, "%s\tUnknown Value\t%d\n", line, programCounter)
+		}
+
+		for i := range registers {
+			registers[i] = 0
+		}
+		for i := range memory {
+			memory[i] = 0
 		}
 
 		if opcodeString != "BREAK" {
