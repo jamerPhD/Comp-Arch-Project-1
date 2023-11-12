@@ -8,9 +8,6 @@ import (
 	"team15_project1/binaryConvert"
 )
 
-var registers [32]uint32
-var memory [1024]uint32
-
 func main() {
 	InputFileName := flag.String("i", "", "Gets the input file name")
 	OutputFileName := flag.String("o", "", "Gets the output file name")
@@ -105,13 +102,6 @@ func main() {
 			fmt.Fprintf(outputFile, "%s\tUnknown Value\t%d\n", line, programCounter)
 		}
 
-		for i := range registers {
-			registers[i] = 0
-		}
-		for i := range memory {
-			memory[i] = 0
-		}
-
 		if opcodeString != "BREAK" {
 			fmt.Fprintln(outputFile2, "====================")
 			fmt.Fprintln(outputFile2, "Cycle:", cycleCounter+1, "\t", opcodeString)
@@ -119,19 +109,21 @@ func main() {
 			for i := 0; i < 32; i += 8 {
 				fmt.Fprintf(outputFile2, "r%02d:\t", i)
 				for j := i; j < i+8; j++ {
-					fmt.Fprintf(outputFile2, "%d\t", registers[j])
+					fmt.Fprintf(outputFile2, "%d\t", 0)
 				}
 				fmt.Fprintln(outputFile2)
 
 			}
-			//fmt.Fprintln(outputFile2, "data:")
-			//for i := 0; i < 1024; i += 8 {
-			//	fmt.Fprintf(outputFile2, "%04d:\t", i)
-			//	for j := i; j < i+8; j++ {
-			//		fmt.Fprintf(outputFile2, "%d\t", memory[j])
-			//	}
-			//	fmt.Fprintln(outputFile2)
-			//}
+			fmt.Fprintln(outputFile2)
+			fmt.Fprintln(outputFile2, "data:")
+			for i := 0; i < 8; i += 1 {
+				//fmt.Fprint(outputFile2, programCounter, ":", 0)
+				for j := i; j < i+1; j++ {
+					fmt.Fprintf(outputFile2, "%d\t", 0)
+				}
+				fmt.Fprint(outputFile2)
+			}
+			fmt.Fprintln(outputFile2)
 
 			cycleCounter += 1
 		}
