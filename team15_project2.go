@@ -8,11 +8,9 @@ import (
 	"team15_project1/binaryConvert"
 )
 
-var registers [32]uint32
-var memory [1024]uint32
-
 type Instruction struct {
 	instructionName string
+	instructionType string
 	rm              int32
 	rn              int32
 	rd              int32
@@ -26,7 +24,18 @@ type Instruction struct {
 }
 
 func main() {
-	instructionQueue := []Instruction{}
+	var instructionQueue []Instruction
+
+	var registers [32]int32
+	var memory [1024]int32
+
+	// Pre-filling registers with arbitrary data for testing purposes
+	for i := range registers {
+		registers[i] = int32(i)
+	}
+	for i := range memory {
+		memory[i] = 0
+	}
 
 	InputFileName := flag.String("i", "", "Gets the input file name")
 	OutputFileName := flag.String("o", "", "Gets the output file name")
@@ -60,7 +69,7 @@ func main() {
 
 	programCounter := 96
 	instructionCounter := 0
-	cycleCounter := 0
+	cycleCounter := 1
 
 	//Start reading instructions
 	for scanner.Scan() {
@@ -70,7 +79,9 @@ func main() {
 
 		// Once we see BREAK we'll exit this loop and read the rest of the file as data only
 		if opcodeString == "BREAK" {
-
+			var BreakInstruction Instruction
+			BreakInstruction.instructionName = "BREAK"
+			BreakInstruction.instructionType = "BREAK"
 			fmt.Fprintf(outputFile, "%s%s %s %s %s %s %s\t%d\t%s\n", line[:1], line[1:6], line[6:11], line[11:16], line[16:21], line[21:26], line[26:], programCounter, opcodeString)
 			break
 		}
@@ -89,6 +100,15 @@ func main() {
 			immediate := binaryConvert.BinaryStringToInt(line[16:22])
 			rn := line[22:27]
 			rd := line[27:32]
+
+			var shiftInstruction Instruction
+			shiftInstruction.instructionName = opcodeString
+			shiftInstruction.instructionType = insType
+			shiftInstruction.immediate = immediate
+			shiftInstruction.rn = binaryConvert.BinaryStringToInt(rn)
+			shiftInstruction.rd = binaryConvert.BinaryStringToInt(rd)
+			instructionQueue = append(instructionQueue, shiftInstruction)
+
 			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, #%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rd), immediate)
 		case "I":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
@@ -100,6 +120,15 @@ func main() {
 			shiftCode := binaryConvert.BinaryStringToInt(line[9:11])
 			rd := binaryConvert.BinaryStringToInt(line[27:32])
 			shiftType := shiftCode * 16
+
+			var IMInstruction Instruction
+			IMInstruction.instructionName = opcodeString
+			IMInstruction.instructionType = insType
+			IMInstruction.immediate = immediate
+			IMInstruction.shiftCode = shiftCode
+			IMInstruction.rd = rd
+			IMInstruction.shiftType = shiftType
+			instructionQueue = append(instructionQueue, IMInstruction)
 
 			fmt.Fprintf(outputFile, "%s %s %s %s\t%d\t%s R%d, %d LSL %d\n", line[:10], line[10:12], line[12:28], line[28:], programCounter, opcodeString, rd, immediate, shiftType)
 		case "CB":
@@ -121,47 +150,83 @@ func main() {
 			fmt.Fprintf(outputFile, "%s\tUnknown Value\t%d\n", line, programCounter)
 		}
 
-		for i := range registers {
-			registers[i] = 0
-		}
-		for i := range memory {
-			memory[i] = 0
-		}
-
-		if opcodeString != "BREAK" {
-			fmt.Fprintln(outputFile2, "====================")
-			fmt.Fprintln(outputFile2, "Cycle:", cycleCounter+1, "\t", opcodeString)
-			fmt.Fprintln(outputFile2, "registers:")
-			for i := 0; i < 32; i += 8 {
-				fmt.Fprintf(outputFile2, "r%02d:\t", i)
-				for j := i; j < i+8; j++ {
-					fmt.Fprintf(outputFile2, "%d\t", 0)
-				}
-				fmt.Fprintln(outputFile2)
-
-			}
-			fmt.Fprintln(outputFile2)
-			fmt.Fprintln(outputFile2, "data:")
-			for i := 0; i < 8; i += 1 {
-				//fmt.Fprint(outputFile2, programCounter, ":", 0)
-				for j := i; j < i+1; j++ {
-					fmt.Fprintf(outputFile2, "%d\t", 0)
-				}
-				fmt.Fprint(outputFile2)
-			}
-			fmt.Fprintln(outputFile2)
-
-			cycleCounter += 1
-		}
-
 		programCounter += 4
 		instructionCounter++
 	}
 
+	// Read file until the end as data, write data to file
 	for scanner.Scan() {
 		programCounter += 4
 		line := scanner.Text()
 		data := binaryConvert.BinaryStringToInt(line)
 		fmt.Fprintf(outputFile, "%s\t%d\t%d\n", line, programCounter, data)
+	}
+
+	// Loop to read through instructionQueue, execute instructions, and write to file
+	for i := range instructionQueue {
+		switch instructionQueue[i].instructionType {
+		case "R":
+
+		case "RL":
+			//rd = rn shift by immediate
+			rd := int(instructionQueue[i].rd)
+			rn := int(instructionQueue[i].rn)
+			immediate := instructionQueue[i].immediate
+
+			switch instructionQueue[i].instructionName {
+			case "LSL":
+				registers[rd] = registers[rn] << immediate
+			case "LSR":
+				registers[rd] = registers[rn] >> immediate
+			case "ASR":
+				registers[rd] = registers[rn] >> immediate
+			}
+		case "I":
+
+		case "IM":
+
+		case "CB":
+
+		case "B":
+
+		case "D":
+
+		case "NOP":
+			fmt.Println("NOP")
+		case "BREAK":
+			break
+		default: // Instruction cannot be identified
+
+		}
+	}
+
+	for i := range instructionQueue {
+		fmt.Fprintln(outputFile2, "====================")
+		fmt.Fprintln(outputFile2, "Cycle:", cycleCounter, "\t", instructionQueue[i].instructionName)
+		fmt.Fprintln(outputFile2, "registers:")
+		for i := 0; i < 32; i += 8 {
+			fmt.Fprintf(outputFile2, "r%02d:\t", i)
+			for j := i; j < i+8; j++ {
+				fmt.Fprintf(outputFile2, "%d\t", registers[j])
+			}
+			fmt.Fprintln(outputFile2)
+
+		}
+		fmt.Fprintln(outputFile2)
+		fmt.Fprintln(outputFile2, "data:")
+		for i := 0; i < 8; i += 1 {
+			//fmt.Fprint(outputFile2, programCounter, ":", 0)
+			for j := i; j < i+1; j++ {
+				fmt.Fprintf(outputFile2, "%d\t", memory[j])
+			}
+			fmt.Fprint(outputFile2)
+		}
+		fmt.Fprintln(outputFile2)
+
+		cycleCounter += 1
+
+		if instructionQueue[i].instructionName == "BREAK" {
+			break
+		}
 	}
 }
