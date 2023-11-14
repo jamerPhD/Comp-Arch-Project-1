@@ -23,18 +23,20 @@ type Instruction struct {
 	op2             int32
 }
 
+type Data struct {
+	memAddress uint32
+	value      int32
+}
+
 func main() {
 	var instructionQueue []Instruction
 
 	var registers [32]int32
-	var memory [1024]int32
+	var memory []Data
 
 	// Pre-filling registers with arbitrary data for testing purposes
 	for i := range registers {
 		registers[i] = int32(i)
-	}
-	for i := range memory {
-		memory[i] = 0
 	}
 
 	InputFileName := flag.String("i", "", "Gets the input file name")
@@ -68,8 +70,6 @@ func main() {
 	scanner := bufio.NewScanner(inputFile)
 
 	programCounter := 96
-	instructionCounter := 0
-	cycleCounter := 1
 
 	//Start reading instructions
 	for scanner.Scan() {
@@ -151,7 +151,6 @@ func main() {
 		}
 
 		programCounter += 4
-		instructionCounter++
 	}
 
 	// Read file until the end as data, write data to file
@@ -163,7 +162,13 @@ func main() {
 	}
 
 	// Loop to read through instructionQueue, execute instructions, and write to file
+	cycleCounter := 1
+	programCounter = 96
 	for i := range instructionQueue {
+		var testMem Data
+		testMem.memAddress = uint32(i)
+		testMem.value = int32(i + 32)
+		memory = append(memory, testMem)
 		switch instructionQueue[i].instructionType {
 		case "R":
 
@@ -198,11 +203,9 @@ func main() {
 		default: // Instruction cannot be identified
 
 		}
-	}
 
-	for i := range instructionQueue {
-		fmt.Fprintln(outputFile2, "====================")
-		fmt.Fprintln(outputFile2, "Cycle:", cycleCounter, "\t", instructionQueue[i].instructionName)
+		fmt.Fprintln(outputFile2, "=====================")
+		fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n", cycleCounter, programCounter, instructionQueue[i].instructionName)
 		fmt.Fprintln(outputFile2, "registers:")
 		for i := 0; i < 32; i += 8 {
 			fmt.Fprintf(outputFile2, "r%02d:\t", i)
@@ -215,18 +218,32 @@ func main() {
 		fmt.Fprintln(outputFile2)
 		fmt.Fprintln(outputFile2, "data:")
 		for i := 0; i < 8; i += 1 {
-			//fmt.Fprint(outputFile2, programCounter, ":", 0)
-			for j := i; j < i+1; j++ {
+			for j := range memory {
 				fmt.Fprintf(outputFile2, "%d\t", memory[j])
 			}
 			fmt.Fprint(outputFile2)
 		}
+
+		rowsToPrint := len(memory) / 8
+
+		for i := 0; i < rowsToPrint; i++ {
+			for j := i * 8; j < j+8; j++ {
+				var data string
+				if j > len(memory) {
+					data = "0"
+				} else {
+					data = fmt.Sprintf("%d:%d", memory[j].memAddress, memory[j].value)
+
+				}
+
+				fmt.Fprintf(outputFile2, "%s ", data)
+			}
+			fmt.Fprint(outputFile2, "\n")
+		}
+
 		fmt.Fprintln(outputFile2)
 
 		cycleCounter += 1
-
-		if instructionQueue[i].instructionName == "BREAK" {
-			break
-		}
+		programCounter += 4
 	}
 }
