@@ -31,11 +31,6 @@ func main() {
 	var memory []int32
 	var startOfData int
 
-	// Pre-filling registers with arbitrary data for testing purposes
-	//for i := range registers {
-	//	registers[i] = int32(i)
-	//}
-
 	InputFileName := flag.String("i", "", "Gets the input file name")
 	OutputFileName := flag.String("o", "", "Gets the output file name")
 	flag.Parse()
@@ -43,8 +38,6 @@ func main() {
 	if flag.NArg() != 0 {
 		os.Exit(200)
 	}
-	//InputFileName := "test1_bin.txt"
-	//OutputFileName := "team15_out"
 
 	inputFile, err := os.Open(*InputFileName)
 	if err != nil {
@@ -114,10 +107,10 @@ func main() {
 			shiftInstruction.immediate = immediate
 			shiftInstruction.rn = binaryConvert.BinaryStringToInt(rn)
 			shiftInstruction.rd = binaryConvert.BinaryStringToInt(rd)
-			shiftInstruction.instructionInfo = fmt.Sprintf("%s R%d, R%d, #%d", opcodeString, shiftInstruction.rn, shiftInstruction.rd, immediate)
+			shiftInstruction.instructionInfo = fmt.Sprintf("%s R%d, R%d, #%d", opcodeString, shiftInstruction.rd, shiftInstruction.rn, immediate)
 			instructionQueue = append(instructionQueue, shiftInstruction)
 
-			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, #%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rd), immediate)
+			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, #%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), immediate)
 		case "I":
 			immediate := binaryConvert.BinaryStringToInt(line[10:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
@@ -129,7 +122,7 @@ func main() {
 			immediateInstruction.rd = rd
 			immediateInstruction.rn = rn
 			immediateInstruction.immediate = immediate
-			immediateInstruction.instructionInfo = fmt.Sprintf("%s R%d, R%d, #%d", opcodeString, rn, rd, immediate)
+			immediateInstruction.instructionInfo = fmt.Sprintf("%s R%d, R%d, #%d", opcodeString, rd, rn, immediate)
 			instructionQueue = append(instructionQueue, immediateInstruction)
 
 			fmt.Fprintf(outputFile, "%s %s %s %s\t%d\t%s R%d, R%d, #%d\n", line[:10], line[10:22], line[22:27], line[27:32], programCounter, opcodeString, rd, rn, immediate)
@@ -146,7 +139,7 @@ func main() {
 			IMInstruction.shiftCode = shiftCode
 			IMInstruction.rd = rd
 			IMInstruction.shiftType = shiftType
-			IMInstruction.instructionInfo = fmt.Sprintf("%s R%d, %d LSL %d", opcodeString, rd, immediate, shiftCode)
+			IMInstruction.instructionInfo = fmt.Sprintf("%s R%d, %d LSL %d", opcodeString, rd, immediate, shiftType)
 			instructionQueue = append(instructionQueue, IMInstruction)
 
 			fmt.Fprintf(outputFile, "%s %s %s %s\t%d\t%s R%d, %d LSL %d\n", line[:10], line[10:12], line[12:28], line[28:], programCounter, opcodeString, rd, immediate, shiftType)
@@ -185,13 +178,6 @@ func main() {
 	// Loop to read through instructionQueue, execute instructions, and write to file
 	cycleCounter := 1
 	programCounter = 96
-	// REMOVE AFTER TESTING
-	// Fill memory with random junk
-	//for i := 0; i < 44; i++ {
-	//	testMem := int32(i + 32)
-	//	memory = append(memory, testMem)
-	//}
-	// REMOVE ABOVE
 
 	for i := range instructionQueue {
 
@@ -239,13 +225,13 @@ func main() {
 				registers[rd] = registers[rn] - immediate
 			}
 		case "IM":
-
+			fmt.Fprintln(outputFile2, "IM Not yet implemented.")
 		case "CB":
-
+			fmt.Fprintln(outputFile2, "CB Not yet implemented.")
 		case "B":
-
+			fmt.Fprintln(outputFile2, "B Not yet implemented.")
 		case "D":
-
+			fmt.Fprintln(outputFile2, "D Not yet implemented.")
 		case "NOP":
 			fmt.Println("NOP")
 		case "BREAK":
@@ -255,7 +241,7 @@ func main() {
 		}
 
 		fmt.Fprintln(outputFile2, "=====================")
-		fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n", cycleCounter, programCounter, instructionQueue[i].instructionInfo)
+		fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n\n", cycleCounter, programCounter, instructionQueue[i].instructionInfo)
 		fmt.Fprintln(outputFile2, "registers:")
 		for i := 0; i < 32; i += 8 {
 			fmt.Fprintf(outputFile2, "r%02d:\t", i)
@@ -280,7 +266,7 @@ func main() {
 			}
 		}
 		// If len(memory) isn't divisible by 8, print the remaining 0s
-		for i := 0; i < len(memory)-len(memory)%8-1; i++ {
+		for i := len(memory) % 8; i < 8; i++ {
 			fmt.Fprintf(outputFile2, "0\t")
 		}
 		fmt.Fprintln(outputFile2)
