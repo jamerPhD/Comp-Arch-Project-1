@@ -9,8 +9,9 @@ import (
 )
 
 type Instruction struct {
-	instructionName string
-	instructionType string
+	instructionName string // Name of instruction, ie ADD, SUB
+	instructionType string // Type of instruction, ie R, IM
+	instructionInfo string // Formatted instruction info, ie ADD R1, R2, R3
 	rm              int32
 	rn              int32
 	rd              int32
@@ -23,16 +24,12 @@ type Instruction struct {
 	op2             int32
 }
 
-type Data struct {
-	memAddress uint32
-	value      int32
-}
-
 func main() {
 	var instructionQueue []Instruction
 
 	var registers [32]int32
-	var memory []Data
+	var memory []int32
+	var startOfData int
 
 	// Pre-filling registers with arbitrary data for testing purposes
 	//for i := range registers {
@@ -101,6 +98,7 @@ func main() {
 			registerInstruction.rd = binaryConvert.BinaryStringToInt(rd)
 			registerInstruction.rn = binaryConvert.BinaryStringToInt(rn)
 			registerInstruction.rm = binaryConvert.BinaryStringToInt(rm)
+			registerInstruction.instructionInfo = fmt.Sprintf("%s R%d, R%d, R%d", opcodeString, registerInstruction.rd, registerInstruction.rn, registerInstruction.rm)
 			instructionQueue = append(instructionQueue, registerInstruction)
 
 			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, R%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
@@ -116,6 +114,7 @@ func main() {
 			shiftInstruction.immediate = immediate
 			shiftInstruction.rn = binaryConvert.BinaryStringToInt(rn)
 			shiftInstruction.rd = binaryConvert.BinaryStringToInt(rd)
+			shiftInstruction.instructionInfo = fmt.Sprintf("%s R%d, R%d, #%d", opcodeString, shiftInstruction.rn, shiftInstruction.rd, immediate)
 			instructionQueue = append(instructionQueue, shiftInstruction)
 
 			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, #%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rd), immediate)
@@ -130,6 +129,7 @@ func main() {
 			immediateInstruction.rd = rd
 			immediateInstruction.rn = rn
 			immediateInstruction.immediate = immediate
+			immediateInstruction.instructionInfo = fmt.Sprintf("%s R%d, R%d, #%d", opcodeString, rn, rd, immediate)
 			instructionQueue = append(instructionQueue, immediateInstruction)
 
 			fmt.Fprintf(outputFile, "%s %s %s %s\t%d\t%s R%d, R%d, #%d\n", line[:10], line[10:22], line[22:27], line[27:32], programCounter, opcodeString, rd, rn, immediate)
@@ -146,6 +146,7 @@ func main() {
 			IMInstruction.shiftCode = shiftCode
 			IMInstruction.rd = rd
 			IMInstruction.shiftType = shiftType
+			IMInstruction.instructionInfo = fmt.Sprintf("%s R%d, %d LSL %d", opcodeString, rd, immediate, shiftCode)
 			instructionQueue = append(instructionQueue, IMInstruction)
 
 			fmt.Fprintf(outputFile, "%s %s %s %s\t%d\t%s R%d, %d LSL %d\n", line[:10], line[10:12], line[12:28], line[28:], programCounter, opcodeString, rd, immediate, shiftType)
@@ -172,10 +173,12 @@ func main() {
 	}
 
 	// Read file until the end as data, write data to file
+	startOfData = programCounter
 	for scanner.Scan() {
 		programCounter += 4
 		line := scanner.Text()
 		data := binaryConvert.BinaryStringToInt(line)
+		memory = append(memory, data)
 		fmt.Fprintf(outputFile, "%s\t%d\t%d\n", line, programCounter, data)
 	}
 
@@ -183,13 +186,13 @@ func main() {
 	cycleCounter := 1
 	programCounter = 96
 	// REMOVE AFTER TESTING
+	// Fill memory with random junk
 	//for i := 0; i < 44; i++ {
-	//	var testMem Data
-	//	testMem.memAddress = uint32(i)
-	//	testMem.value = int32(i + 32)
+	//	testMem := int32(i + 32)
 	//	memory = append(memory, testMem)
 	//}
 	// REMOVE ABOVE
+
 	for i := range instructionQueue {
 
 		switch instructionQueue[i].instructionType {
@@ -252,7 +255,7 @@ func main() {
 		}
 
 		fmt.Fprintln(outputFile2, "=====================")
-		fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n", cycleCounter, programCounter, instructionQueue[i].instructionName)
+		fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n", cycleCounter, programCounter, instructionQueue[i].instructionInfo)
 		fmt.Fprintln(outputFile2, "registers:")
 		for i := 0; i < 32; i += 8 {
 			fmt.Fprintf(outputFile2, "r%02d:\t", i)
@@ -263,16 +266,23 @@ func main() {
 
 		}
 		fmt.Fprintln(outputFile2)
+
 		fmt.Fprintln(outputFile2, "data:")
-		var printData string
+		memAddress := startOfData
 		for i := range memory {
-			printData = fmt.Sprintf("%d:%d", memory[i].memAddress, memory[i].value)
-			fmt.Fprintf(outputFile2, "%s\t", printData)
+			if i%8 == 0 {
+				fmt.Fprintf(outputFile2, "%d:", memAddress)
+			}
+			fmt.Fprintf(outputFile2, "%d\t", memory[i])
 			if i%8 == 7 {
 				fmt.Fprintln(outputFile2)
+				memAddress += 32
 			}
 		}
-
+		// If len(memory) isn't divisible by 8, print the remaining 0s
+		for i := 0; i < len(memory)-len(memory)%8-1; i++ {
+			fmt.Fprintf(outputFile2, "0\t")
+		}
 		fmt.Fprintln(outputFile2)
 
 		cycleCounter += 1
