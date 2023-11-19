@@ -147,6 +147,15 @@ func main() {
 			conditional := binaryConvert.BinaryStringToInt(line[27:32])
 			offset := binaryConvert.BinaryStringToInt(line[8:27])
 			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, #%d\n", line[:8]+" "+line[8:27]+" "+line[27:32], programCounter, opcodeString, conditional, offset)
+
+			var CBInstruction Instruction
+			CBInstruction.instructionName = opcodeString
+			CBInstruction.instructionType = insType
+			CBInstruction.offset = offset
+			CBInstruction.conditional = conditional
+			CBInstruction.instructionInfo = fmt.Sprintf("%s R%d, #%d", opcodeString, conditional, offset)
+			instructionQueue = append(instructionQueue, CBInstruction)
+
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
 			fmt.Fprintf(outputFile, "%s %s\t%d\t%s #%d\n", line[:6], line[6:32], programCounter, opcodeString, offset)
