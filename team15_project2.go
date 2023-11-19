@@ -150,12 +150,30 @@ func main() {
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
 			fmt.Fprintf(outputFile, "%s %s\t%d\t%s #%d\n", line[:6], line[6:32], programCounter, opcodeString, offset)
+
+			var BInstruction Instruction
+			BInstruction.instructionName = opcodeString
+			BInstruction.instructionType = insType
+			BInstruction.offset = offset
+			BInstruction.instructionInfo = fmt.Sprintf("B #%d", offset)
+			instructionQueue = append(instructionQueue, BInstruction)
+
 		case "D":
 			address := binaryConvert.BinaryStringToInt(line[11:20])
 			//op2 := binaryConvert.BinaryStringToInt(line[20:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
-			rt := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Fprintf(outputFile, "%s %s %s %s %s\t%d\t%s R%d, [R%d, #%d]\n", line[:11], line[11:20], line[20:22], line[22:27], line[27:32], programCounter, opcodeString, rt, rn, address)
+			rd := binaryConvert.BinaryStringToInt(line[27:32])
+			fmt.Fprintf(outputFile, "%s %s %s %s %s\t%d\t%s R%d, [R%d, #%d]\n", line[:11], line[11:20], line[20:22], line[22:27], line[27:32], programCounter, opcodeString, rd, rn, address)
+
+			var DInstruction Instruction
+			DInstruction.instructionName = opcodeString
+			DInstruction.instructionType = insType
+			DInstruction.rn = rn
+			DInstruction.rd = rd
+			DInstruction.address = address
+			DInstruction.instructionInfo = fmt.Sprintf("%s R%d, [R%d, #%d]", opcodeString, rd, rn, address)
+			instructionQueue = append(instructionQueue, DInstruction)
+
 		case "NOP":
 			fmt.Fprintf(outputFile, "%s\t%d\t%s\n", line, programCounter, opcodeString)
 		default: // Instruction cannot be identified
@@ -180,6 +198,8 @@ func main() {
 	programCounter = 96
 
 	for i := range instructionQueue {
+		var info string
+		fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n\n", cycleCounter, programCounter, info)
 
 		switch instructionQueue[i].instructionType {
 		case "R":
@@ -226,12 +246,34 @@ func main() {
 			}
 		case "IM":
 			fmt.Fprintln(outputFile2, "IM Not yet implemented.")
+			switch instructionQueue[i].instructionName {
+			case "MOVZ":
+
+			case "MOVK":
+
+			}
 		case "CB":
 			fmt.Fprintln(outputFile2, "CB Not yet implemented.")
+			switch instructionQueue[i].instructionName {
+			case "CBZ":
+
+			case "CBNZ":
+
+			}
 		case "B":
-			fmt.Fprintln(outputFile2, "B Not yet implemented.")
+			//fmt.Fprintln(outputFile2, "B Not yet implemented.")
+			//programCounter += int(instructionQueue[i].offset * 4)
+			//i += int(instructionQueue[i].offset)
+
 		case "D":
 			fmt.Fprintln(outputFile2, "D Not yet implemented.")
+			switch instructionQueue[i].instructionName {
+			case "STUR":
+
+			case "LDUR":
+
+			}
+
 		case "NOP":
 			fmt.Println("NOP")
 		case "BREAK":
