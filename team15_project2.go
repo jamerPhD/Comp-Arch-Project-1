@@ -207,8 +207,8 @@ func main() {
 	programCounter = 96
 
 	for i := range instructionQueue {
-		var info string
-		fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n\n", cycleCounter, programCounter, info)
+		//var info string
+		//fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n\n", cycleCounter, programCounter, info)
 
 		switch instructionQueue[i].instructionType {
 		case "R":
