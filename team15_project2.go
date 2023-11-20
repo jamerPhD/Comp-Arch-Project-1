@@ -72,6 +72,8 @@ func main() {
 			var BreakInstruction Instruction
 			BreakInstruction.instructionName = "BREAK"
 			BreakInstruction.instructionType = "BREAK"
+			BreakInstruction.instructionInfo = "BREAK"
+			instructionQueue = append(instructionQueue, BreakInstruction)
 			fmt.Fprintf(outputFile, "%s%s %s %s %s %s %s\t%d\t%s\n", line[:1], line[1:6], line[6:11], line[11:16], line[16:21], line[21:26], line[26:], programCounter, opcodeString)
 			break
 		}
@@ -146,19 +148,18 @@ func main() {
 		case "CB":
 			conditional := binaryConvert.BinaryStringToInt(line[27:32])
 			offset := binaryConvert.BinaryStringToInt(line[8:27])
-			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, #%d\n", line[:8]+" "+line[8:27]+" "+line[27:32], programCounter, opcodeString, conditional, offset)
 
 			var CBInstruction Instruction
 			CBInstruction.instructionName = opcodeString
 			CBInstruction.instructionType = insType
-			CBInstruction.offset = offset
 			CBInstruction.conditional = conditional
+			CBInstruction.offset = offset
 			CBInstruction.instructionInfo = fmt.Sprintf("%s R%d, #%d", opcodeString, conditional, offset)
 			instructionQueue = append(instructionQueue, CBInstruction)
 
+			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, #%d\n", line[:8]+" "+line[8:27]+" "+line[27:32], programCounter, opcodeString, conditional, offset)
 		case "B":
 			offset := binaryConvert.BinaryStringToInt(line[6:32])
-			fmt.Fprintf(outputFile, "%s %s\t%d\t%s #%d\n", line[:6], line[6:32], programCounter, opcodeString, offset)
 
 			var BInstruction Instruction
 			BInstruction.instructionName = opcodeString
@@ -167,12 +168,13 @@ func main() {
 			BInstruction.instructionInfo = fmt.Sprintf("B #%d", offset)
 			instructionQueue = append(instructionQueue, BInstruction)
 
+			fmt.Fprintf(outputFile, "%s %s\t%d\t%s #%d\n", line[:6], line[6:32], programCounter, opcodeString, offset)
 		case "D":
 			address := binaryConvert.BinaryStringToInt(line[11:20])
 			//op2 := binaryConvert.BinaryStringToInt(line[20:22])
 			rn := binaryConvert.BinaryStringToInt(line[22:27])
+			rt := binaryConvert.BinaryStringToInt(line[27:32])
 			rd := binaryConvert.BinaryStringToInt(line[27:32])
-			fmt.Fprintf(outputFile, "%s %s %s %s %s\t%d\t%s R%d, [R%d, #%d]\n", line[:11], line[11:20], line[20:22], line[22:27], line[27:32], programCounter, opcodeString, rd, rn, address)
 
 			var DInstruction Instruction
 			DInstruction.instructionName = opcodeString
@@ -183,6 +185,7 @@ func main() {
 			DInstruction.instructionInfo = fmt.Sprintf("%s R%d, [R%d, #%d]", opcodeString, rd, rn, address)
 			instructionQueue = append(instructionQueue, DInstruction)
 
+			fmt.Fprintf(outputFile, "%s %s %s %s %s\t%d\t%s R%d, [R%d, #%d]\n", line[:11], line[11:20], line[20:22], line[22:27], line[27:32], programCounter, opcodeString, rt, rn, address)
 		case "NOP":
 			fmt.Fprintf(outputFile, "%s\t%d\t%s\n", line, programCounter, opcodeString)
 		default: // Instruction cannot be identified
@@ -206,9 +209,9 @@ func main() {
 	cycleCounter := 1
 	programCounter = 96
 
-	for i := range instructionQueue {
-		//var info string
-		//fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n\n", cycleCounter, programCounter, info)
+	for i := 0; i < len(instructionQueue); i++ {
+		fmt.Fprintln(outputFile2, "=====================")
+		fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n\n", cycleCounter, programCounter, instructionQueue[i].instructionInfo)
 
 		switch instructionQueue[i].instructionType {
 		case "R":
@@ -254,35 +257,35 @@ func main() {
 				registers[rd] = registers[rn] - immediate
 			}
 		case "IM":
-			fmt.Fprintln(outputFile2, "IM Not yet implemented.")
+			rd := int(instructionQueue[i].rd)
+			immediate := instructionQueue[i].immediate
+			shiftType := instructionQueue[i].shiftType
+
 			switch instructionQueue[i].instructionName {
-			case "MOVZ":
-
 			case "MOVK":
-
+				registers[rd] = immediate << shiftType
+			case "MOVZ":
+				registers[rd] = immediate << shiftType
 			}
 		case "CB":
-			fmt.Fprintln(outputFile2, "CB Not yet implemented.")
+			conditional := registers[instructionQueue[i].conditional]
 			switch instructionQueue[i].instructionName {
 			case "CBZ":
-
+				if conditional == 0 {
+					programCounter += int(instructionQueue[i].offset*4) - 4
+					i += int(instructionQueue[i].offset) - 1
+				}
 			case "CBNZ":
-
+				if conditional != 0 {
+					programCounter += int(instructionQueue[i].offset*4) - 4
+					i += int(instructionQueue[i].offset) - 1
+				}
 			}
 		case "B":
-			//fmt.Fprintln(outputFile2, "B Not yet implemented.")
-			//programCounter += int(instructionQueue[i].offset * 4)
-			//i += int(instructionQueue[i].offset)
-
+			programCounter += int(instructionQueue[i].offset*4) - 4
+			i += int(instructionQueue[i].offset) - 1
 		case "D":
 			fmt.Fprintln(outputFile2, "D Not yet implemented.")
-			switch instructionQueue[i].instructionName {
-			case "STUR":
-
-			case "LDUR":
-
-			}
-
 		case "NOP":
 			fmt.Println("NOP")
 		case "BREAK":
@@ -291,8 +294,6 @@ func main() {
 
 		}
 
-		fmt.Fprintln(outputFile2, "=====================")
-		fmt.Fprintf(outputFile2, "cycle:%d\t%d\t%s\n\n", cycleCounter, programCounter, instructionQueue[i].instructionInfo)
 		fmt.Fprintln(outputFile2, "registers:")
 		for i := 0; i < 32; i += 8 {
 			fmt.Fprintf(outputFile2, "r%02d:\t", i)
@@ -306,20 +307,23 @@ func main() {
 
 		fmt.Fprintln(outputFile2, "data:")
 		memAddress := startOfData
-		for i := range memory {
-			if i%8 == 0 {
-				fmt.Fprintf(outputFile2, "%d:", memAddress)
+		if len(memory) != 0 {
+			for i := range memory {
+				if i%8 == 0 {
+					fmt.Fprintf(outputFile2, "%d:", memAddress)
+				}
+				fmt.Fprintf(outputFile2, "%d\t", memory[i])
+				if i%8 == 7 {
+					fmt.Fprintln(outputFile2)
+					memAddress += 32
+				}
 			}
-			fmt.Fprintf(outputFile2, "%d\t", memory[i])
-			if i%8 == 7 {
-				fmt.Fprintln(outputFile2)
-				memAddress += 32
+			// If len(memory) isn't divisible by 8, print the remaining 0s
+			for i := len(memory) % 8; i < 8; i++ {
+				fmt.Fprintf(outputFile2, "0\t")
 			}
 		}
-		// If len(memory) isn't divisible by 8, print the remaining 0s
-		for i := len(memory) % 8; i < 8; i++ {
-			fmt.Fprintf(outputFile2, "0\t")
-		}
+
 		fmt.Fprintln(outputFile2)
 
 		cycleCounter += 1
