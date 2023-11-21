@@ -285,13 +285,31 @@ func main() {
 			programCounter += int(instructionQueue[i].offset*4) - 4
 			i += int(instructionQueue[i].offset) - 1
 		case "D":
-			fmt.Fprintln(outputFile2, "D Not yet implemented.")
+			switch instructionQueue[i].instructionName {
+			case "STUR":
+				rd := int(instructionQueue[i].rd)
+				rn := int(registers[instructionQueue[i].rn])
+				offset := int(instructionQueue[i].address * 4)
+				memLoc := (rn + offset - startOfData) / 4
+				for memLoc > len(memory)-1 {
+					//append 0 to memory
+					memory = append(memory, 0)
+				}
+				memory[memLoc] = registers[rd]
+			case "LDUR":
+				rd := instructionQueue[i].rd
+				rn := registers[instructionQueue[i].rn]
+				offset := instructionQueue[i].address * 4
+				//rd = rn + offset
+				memLoc := (int(rn+offset) - startOfData) / 4
+				registers[rd] = memory[memLoc]
+			}
 		case "NOP":
 			fmt.Println("NOP")
 		case "BREAK":
 			break
 		default: // Instruction cannot be identified
-
+			fmt.Println("Instruction not identified")
 		}
 
 		fmt.Fprintln(outputFile2, "registers:")
