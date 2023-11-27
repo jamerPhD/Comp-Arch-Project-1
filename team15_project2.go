@@ -221,6 +221,8 @@ func main() {
 			rm := int(instructionQueue[i].rm)
 
 			switch instructionQueue[i].instructionName {
+			case "EOR":
+				registers[rd] = registers[rn] ^ registers[rm]
 			case "ADD":
 				registers[rd] = registers[rn] + registers[rm]
 			case "SUB":
@@ -240,7 +242,10 @@ func main() {
 			case "LSL":
 				registers[rd] = registers[rn] << immediate
 			case "LSR":
-				registers[rd] = registers[rn] >> immediate
+				uRn := uint32(registers[rn]) >> immediate
+				finalRn := int32(uRn)
+				registers[rd] = finalRn
+				//registers[rd] = registers[rn] >> immediate
 			case "ASR":
 				registers[rd] = registers[rn] >> immediate
 			}
