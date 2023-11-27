@@ -27,7 +27,7 @@ type Instruction struct {
 func main() {
 	var instructionQueue []Instruction
 
-	var registers [32]int32
+	var registers [32]int64
 	var memory []int32
 	var startOfData int
 
@@ -243,7 +243,7 @@ func main() {
 				registers[rd] = registers[rn] << immediate
 			case "LSR":
 				uRn := uint32(registers[rn]) >> immediate
-				finalRn := int32(uRn)
+				finalRn := int64(uRn)
 				registers[rd] = finalRn
 				//registers[rd] = registers[rn] >> immediate
 			case "ASR":
@@ -257,9 +257,9 @@ func main() {
 
 			switch instructionQueue[i].instructionName {
 			case "ADDI":
-				registers[rd] = registers[rn] + immediate
+				registers[rd] = registers[rn] + int64(immediate)
 			case "SUBI":
-				registers[rd] = registers[rn] - immediate
+				registers[rd] = registers[rn] - int64(immediate)
 			}
 		case "IM":
 			rd := int(instructionQueue[i].rd)
@@ -268,9 +268,9 @@ func main() {
 
 			switch instructionQueue[i].instructionName {
 			case "MOVK":
-				registers[rd] = registers[rd] + immediate<<shiftType
+				registers[rd] = registers[rd] + int64(immediate<<shiftType)
 			case "MOVZ":
-				registers[rd] = immediate << shiftType
+				registers[rd] = int64(immediate << shiftType)
 			}
 		case "CB":
 			conditional := registers[instructionQueue[i].conditional]
@@ -300,14 +300,14 @@ func main() {
 					//append 0 to memory
 					memory = append(memory, 0)
 				}
-				memory[memLoc] = registers[rd]
+				memory[memLoc] = int32(registers[rd])
 			case "LDUR":
 				rd := instructionQueue[i].rd
 				rn := registers[instructionQueue[i].rn]
 				offset := instructionQueue[i].address * 4
 				//rd = rn + offset
-				memLoc := (int(rn+offset) - startOfData) / 4
-				registers[rd] = memory[memLoc]
+				memLoc := (int(rn+int64(offset)) - startOfData) / 4
+				registers[rd] = int64(memory[memLoc])
 			}
 		case "NOP":
 			fmt.Println("NOP")
