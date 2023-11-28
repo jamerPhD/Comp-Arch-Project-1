@@ -5,8 +5,151 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"team15_project1/binaryConvert"
+	"strconv"
 )
+
+// InstructionType
+// Maps instruction to its type
+// parameter: instruction string (ie AND)
+// returns: instruction type string (ie R)
+var instructionType = map[string]string{
+	"B":    "B",
+	"AND":  "R",
+	"ADD":  "R",
+	"ADDI": "I",
+	"ORR":  "R",
+	"CBZ":  "CB",
+	"CBNZ": "CB",
+	"SUB":  "R",
+	"SUBI": "I",
+	"MOVZ": "IM",
+	"MOVK": "IM",
+	"LSR":  "RL",
+	"LSL":  "RL",
+	"STUR": "D",
+	"LDUR": "D",
+	"ASR":  "RL",
+	"EOR":  "R",
+	"NOP":  "NOP",
+}
+
+// GetInstructionType
+// Accessor for instructionType map
+// Returns a string of the instruction type
+func GetInstructionType(key string) string {
+	if key == "Unknown Value" {
+		return key
+	} else {
+		return instructionType[key]
+	}
+
+}
+
+// IntToInstruction
+// converts an integer value (from a binary instruction) into a string OPCODE
+// parameter: int32
+// return: string
+func IntToInstruction(value int32) string {
+	if value == 0 {
+		return "NOP"
+	}
+	if value >= 160 && value <= 191 {
+		return "B"
+	}
+	if value == 1104 {
+		return "AND"
+	}
+	if value == 1112 {
+		return "ADD"
+	}
+	if value == 1160 || value == 1161 {
+		return "ADDI"
+	}
+	if value == 1360 {
+		return "ORR"
+	}
+	if value >= 1440 && value <= 1447 {
+		return "CBZ"
+	}
+	if value >= 1448 && value <= 1455 {
+		return "CBNZ"
+	}
+	if value == 1624 {
+		return "SUB"
+	}
+	if value == 1672 || value == 1673 {
+		return "SUBI"
+	}
+	if value >= 1684 && value <= 1687 {
+		return "MOVZ"
+	}
+	if value == 1690 {
+		return "LSR"
+	}
+	if value == 1691 {
+		return "LSL"
+	}
+	if value == 1692 {
+		return "ASR"
+	}
+	if value == 1872 {
+		return "EOR"
+	}
+	if value >= 1940 && value <= 1943 {
+		return "MOVK"
+	}
+	if value == 1984 {
+		return "STUR"
+	}
+	if value == 1986 {
+		return "LDUR"
+	}
+	if value == 2038 {
+		return "BREAK"
+	}
+
+	return "Unknown Instruction" // Instruction not found
+
+}
+
+// BinaryStringToInt
+// converts a string of 11 characters (binary number) to a base 10 integer
+// parameter: string
+// return: int
+func BinaryStringToInt(binary string) int32 {
+	bitSize := 26
+	if len(binary) > 26 {
+		bitSize = 32
+	}
+	if i64, err := strconv.ParseInt(binary, 2, bitSize); err != nil {
+		return (BinaryStringToInt(twosComplement(binary)) + 1) * -1
+	} else {
+		return int32(i64)
+	}
+}
+
+// twosComplement
+// helper function for binaryStringToInt
+// this is called if the ParseInt on the binary string overflows in binaryStringToInt
+// inverts the bits then returns the inverted string
+// can also throw panic if the string contains non-binary characters for some reason
+// parameter: string
+// return: string with inverted bits
+func twosComplement(binary string) string {
+	var complement = ""
+
+	for i := 0; i < len(binary); i++ {
+		if binary[i] == '0' {
+			complement += "1"
+		} else if binary[i] == '1' {
+			complement += "0"
+		} else {
+			panic("Binary string contains invalid character: " + binary)
+		}
+	}
+
+	return complement
+}
 
 type Instruction struct {
 	instructionName string // Name of instruction, ie ADD, SUB
@@ -64,8 +207,8 @@ func main() {
 	//Start reading instructions
 	for scanner.Scan() {
 		line := scanner.Text()
-		opcode := binaryConvert.BinaryStringToInt(line[:11])
-		opcodeString := binaryConvert.IntToInstruction(opcode)
+		opcode := BinaryStringToInt(line[:11])
+		opcodeString := IntToInstruction(opcode)
 
 		// Once we see BREAK we'll exit this loop and read the rest of the file as data only
 		if opcodeString == "BREAK" {
@@ -78,7 +221,7 @@ func main() {
 			break
 		}
 
-		insType := binaryConvert.GetInstructionType(opcodeString)
+		insType := GetInstructionType(opcodeString)
 
 		switch insType {
 		case "R":
@@ -90,16 +233,16 @@ func main() {
 			var registerInstruction Instruction
 			registerInstruction.instructionName = opcodeString
 			registerInstruction.instructionType = insType
-			registerInstruction.rd = binaryConvert.BinaryStringToInt(rd)
-			registerInstruction.rn = binaryConvert.BinaryStringToInt(rn)
-			registerInstruction.rm = binaryConvert.BinaryStringToInt(rm)
+			registerInstruction.rd = BinaryStringToInt(rd)
+			registerInstruction.rn = BinaryStringToInt(rn)
+			registerInstruction.rm = BinaryStringToInt(rm)
 			registerInstruction.instructionInfo = fmt.Sprintf("%s R%d, R%d, R%d", opcodeString, registerInstruction.rd, registerInstruction.rn, registerInstruction.rm)
 			instructionQueue = append(instructionQueue, registerInstruction)
 
-			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, R%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), binaryConvert.BinaryStringToInt(rm))
+			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, R%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, BinaryStringToInt(rd), BinaryStringToInt(rn), BinaryStringToInt(rm))
 		case "RL":
 			//rm, rn, rd etc are labels given in the lecture 7 slides
-			immediate := binaryConvert.BinaryStringToInt(line[16:22])
+			immediate := BinaryStringToInt(line[16:22])
 			rn := line[22:27]
 			rd := line[27:32]
 
@@ -107,16 +250,16 @@ func main() {
 			shiftInstruction.instructionName = opcodeString
 			shiftInstruction.instructionType = insType
 			shiftInstruction.immediate = immediate
-			shiftInstruction.rn = binaryConvert.BinaryStringToInt(rn)
-			shiftInstruction.rd = binaryConvert.BinaryStringToInt(rd)
+			shiftInstruction.rn = BinaryStringToInt(rn)
+			shiftInstruction.rd = BinaryStringToInt(rd)
 			shiftInstruction.instructionInfo = fmt.Sprintf("%s R%d, R%d, #%d", opcodeString, shiftInstruction.rd, shiftInstruction.rn, immediate)
 			instructionQueue = append(instructionQueue, shiftInstruction)
 
-			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, #%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, binaryConvert.BinaryStringToInt(rd), binaryConvert.BinaryStringToInt(rn), immediate)
+			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, R%d, #%d\n", line[:11]+" "+line[11:16]+" "+line[16:22]+" "+line[22:27]+" "+line[27:32], programCounter, opcodeString, BinaryStringToInt(rd), BinaryStringToInt(rn), immediate)
 		case "I":
-			immediate := binaryConvert.BinaryStringToInt(line[10:22])
-			rn := binaryConvert.BinaryStringToInt(line[22:27])
-			rd := binaryConvert.BinaryStringToInt(line[27:32])
+			immediate := BinaryStringToInt(line[10:22])
+			rn := BinaryStringToInt(line[22:27])
+			rd := BinaryStringToInt(line[27:32])
 
 			var immediateInstruction Instruction
 			immediateInstruction.instructionName = opcodeString
@@ -129,9 +272,9 @@ func main() {
 
 			fmt.Fprintf(outputFile, "%s %s %s %s\t%d\t%s R%d, R%d, #%d\n", line[:10], line[10:22], line[22:27], line[27:32], programCounter, opcodeString, rd, rn, immediate)
 		case "IM":
-			immediate := binaryConvert.BinaryStringToInt(line[11:27])
-			shiftCode := binaryConvert.BinaryStringToInt(line[9:11])
-			rd := binaryConvert.BinaryStringToInt(line[27:32])
+			immediate := BinaryStringToInt(line[11:27])
+			shiftCode := BinaryStringToInt(line[9:11])
+			rd := BinaryStringToInt(line[27:32])
 			shiftType := shiftCode * 16
 
 			var IMInstruction Instruction
@@ -146,8 +289,8 @@ func main() {
 
 			fmt.Fprintf(outputFile, "%s %s %s %s\t%d\t%s R%d, %d LSL %d\n", line[:10], line[10:12], line[12:28], line[28:], programCounter, opcodeString, rd, immediate, shiftType)
 		case "CB":
-			conditional := binaryConvert.BinaryStringToInt(line[27:32])
-			offset := binaryConvert.BinaryStringToInt(line[8:27])
+			conditional := BinaryStringToInt(line[27:32])
+			offset := BinaryStringToInt(line[8:27])
 
 			var CBInstruction Instruction
 			CBInstruction.instructionName = opcodeString
@@ -159,7 +302,7 @@ func main() {
 
 			fmt.Fprintf(outputFile, "%s\t%d\t%s R%d, #%d\n", line[:8]+" "+line[8:27]+" "+line[27:32], programCounter, opcodeString, conditional, offset)
 		case "B":
-			offset := binaryConvert.BinaryStringToInt(line[6:32])
+			offset := BinaryStringToInt(line[6:32])
 
 			var BInstruction Instruction
 			BInstruction.instructionName = opcodeString
@@ -170,11 +313,11 @@ func main() {
 
 			fmt.Fprintf(outputFile, "%s %s\t%d\t%s #%d\n", line[:6], line[6:32], programCounter, opcodeString, offset)
 		case "D":
-			address := binaryConvert.BinaryStringToInt(line[11:20])
-			//op2 := binaryConvert.BinaryStringToInt(line[20:22])
-			rn := binaryConvert.BinaryStringToInt(line[22:27])
-			rt := binaryConvert.BinaryStringToInt(line[27:32])
-			rd := binaryConvert.BinaryStringToInt(line[27:32])
+			address := BinaryStringToInt(line[11:20])
+			//op2 := BinaryStringToInt(line[20:22])
+			rn := BinaryStringToInt(line[22:27])
+			rt := BinaryStringToInt(line[27:32])
+			rd := BinaryStringToInt(line[27:32])
 
 			var DInstruction Instruction
 			DInstruction.instructionName = opcodeString
@@ -200,7 +343,7 @@ func main() {
 	for scanner.Scan() {
 		programCounter += 4
 		line := scanner.Text()
-		data := binaryConvert.BinaryStringToInt(line)
+		data := BinaryStringToInt(line)
 		memory = append(memory, data)
 		fmt.Fprintf(outputFile, "%s\t%d\t%d\n", line, programCounter, data)
 	}
